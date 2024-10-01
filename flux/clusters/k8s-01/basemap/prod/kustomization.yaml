@@ -16,4 +16,36 @@ patches:
         value:
           - ./helm/basemap/values.yaml
           - ./helm/basemap/values/values-prod.yaml
+  - target:
+      kind: Deployment
+      name: 'prod-basemap-tileserver'
+      group: apps
+      version: v1
+    patch: |-
+      - op: add
+        path: /spec/template/spec/affinity/nodeAffinity
+        value:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - hwn01.k8s-01.kontur.io
+  - target:
+      kind: CronJob
+      name: 'prod-basemap'
+      group: batch
+      version: v1
+    patch: |-
+      - op: add
+        path: /spec/jobTemplate/spec/template/spec/affinity/nodeAffinity
+        value:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - hwn02.k8s-01.kontur.io
 ---
